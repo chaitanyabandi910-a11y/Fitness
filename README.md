@@ -7,7 +7,9 @@ and track calories/macros/weight/exercise against personal goals.
 - **Frontend**: React + TypeScript + Vite + Tailwind CSS v4, React Router, TanStack Query
 - **Backend**: Supabase (Postgres + Auth + Storage + Edge Functions), all tables behind Row Level Security
 - **Nutrition data**: USDA FoodData Central (Foundation + SR Legacy datasets)
-- **Photo analysis**: Claude vision API, called server-side from a Supabase Edge Function
+- **Photo analysis**: a swappable open-weight vision model (default: Qwen2.5-VL via OpenRouter's
+  free tier) called server-side from a Supabase Edge Function — change providers any time by
+  editing env vars, not code (see [supabase/functions/_shared/vision.ts](supabase/functions/_shared/vision.ts))
 
 ## 1. One-time setup
 
@@ -22,8 +24,13 @@ and track calories/macros/weight/exercise against personal goals.
 
 ### Get API keys
 
-- **USDA FoodData Central**: sign up free at [api.data.gov/signup](https://api.data.gov/signup) — the key arrives by email instantly.
-- **Anthropic (Claude)**: create a key at [console.anthropic.com](https://console.anthropic.com) → Settings → API Keys.
+- **USDA FoodData Central**: sign up free at [api.data.gov/signup](https://api.data.gov/signup) —
+  the key arrives by email instantly. This is the **US** government food database API. It is not
+  the same as `data.gov.in` (India's open data portal) — that site has no equivalent
+  food-nutrition API, so a `data.gov.in` key will not work with `scripts/ingest-usda.ts`.
+- **Vision model (photo feature)**: sign up free at [openrouter.ai](https://openrouter.ai) →
+  Keys → Create Key. OpenRouter proxies many open-weight vision models; several are entirely
+  free (no card required) — the app defaults to `qwen/qwen2.5-vl-72b-instruct:free`.
 
 ### Configure environment variables
 
@@ -47,12 +54,26 @@ This creates all tables (`profiles`, `foods`, `food_logs`, `photo_scans`, `body_
 
 ### Deploy the photo-analysis Edge Function
 
-The Anthropic API key must live as a **Supabase secret**, never in frontend code:
+The vision API key must live as a **Supabase secret**, never in frontend code:
 
 ```bash
-npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+npx supabase secrets set VISION_API_KEY=sk-or-v1-...
 npx supabase functions deploy analyze-food-photo
 ```
+
+**To switch vision providers/models later**, no code changes are needed — just update secrets
+and redeploy:
+
+```bash
+npx supabase secrets set VISION_API_BASE_URL=https://api.together.xyz/v1
+npx supabase secrets set VISION_MODEL=meta-llama/Llama-Vision-Free
+npx supabase secrets set VISION_API_KEY=...
+npx supabase functions deploy analyze-food-photo
+```
+
+Any OpenAI-compatible `/chat/completions` endpoint works: OpenRouter, Together.ai, Fireworks,
+a self-hosted Ollama/vLLM server, or a paid provider like OpenAI — see
+[supabase/functions/_shared/vision.ts](supabase/functions/_shared/vision.ts).
 
 ### Seed the food database from USDA
 
@@ -79,8 +100,8 @@ row automatically; fill in body stats on the Profile page to get suggested calor
 1. User uploads/takes a photo in the app → it's uploaded to the private `food-photos` storage
    bucket under `<user_id>/...` (RLS-scoped, so users can only read their own photos).
 2. The app calls the `analyze-food-photo` Edge Function with the storage path.
-3. The function downloads the image, sends it to Claude's vision API with a tool-use schema
-   forcing structured JSON output, and auto-detects:
+3. The function downloads the image, sends it to the configured vision model requesting
+   structured JSON output, and auto-detects:
    - **Nutrition label visible** → OCRs the exact printed values (`label_ocr`, high confidence).
    - **No label (plate/produce/etc.)** → identifies each food item and estimates macros from
      portion size (`food_vision`, lower confidence).
@@ -98,7 +119,9 @@ src/
   types/        Hand-written Supabase Database types
 supabase/
   migrations/   SQL schema + RLS policies
-  functions/    analyze-food-photo Edge Function (Deno)
+  functions/
+    analyze-food-photo/  Edge Function entrypoint (Deno)
+    _shared/vision.ts    swappable vision-model client (change env vars, not code)
 scripts/
   ingest-usda.ts  USDA FoodData Central ingestion script
 ```
