@@ -37,10 +37,14 @@ const NUTRIENT_NUMBER = {
 } as const;
 
 interface UsdaNutrient {
-  nutrientNumber?: string;
-  nutrientName?: string;
+  // The abridged /v1/foods/list endpoint uses `number`/`amount` -- NOT
+  // `nutrientNumber`/`value`, which is what the full /v1/food/{fdcId} and
+  // /v1/foods/search endpoints use. Mixing these up silently yields all-zero
+  // macros (no type error, since both fields are optional).
+  number?: string;
+  name?: string;
   unitName?: string;
-  value?: number;
+  amount?: number;
 }
 
 interface UsdaFood {
@@ -51,9 +55,9 @@ interface UsdaFood {
   foodNutrients?: UsdaNutrient[];
 }
 
-function findNutrient(nutrients: UsdaNutrient[] | undefined, number: string): number {
-  const match = nutrients?.find((n) => n.nutrientNumber === number);
-  return match?.value ?? 0;
+function findNutrient(nutrients: UsdaNutrient[] | undefined, nutrientNumber: string): number {
+  const match = nutrients?.find((n) => n.number === nutrientNumber);
+  return match?.amount ?? 0;
 }
 
 function categoryOf(food: UsdaFood): string | null {
