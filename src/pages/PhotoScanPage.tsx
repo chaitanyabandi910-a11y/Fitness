@@ -61,7 +61,7 @@ export function PhotoScanPage() {
       const { data, error: fnError } = await supabase.functions.invoke('analyze-food-photo', {
         body: { storagePath: path },
       })
-      if (fnError) throw fnError
+      if (fnError) throw new Error(await describeFunctionError(fnError))
       if (data?.error) throw new Error(data.error)
       setResult(data.result)
     } catch (err) {
@@ -127,6 +127,9 @@ export function PhotoScanPage() {
             {analyzing ? 'Analyzing...' : 'Analyze photo'}
           </button>
         )}
+        {analyzing && (
+          <p className="mt-2 text-center text-sm text-slate-400">This can take up to a minute — hang tight.</p>
+        )}
       </div>
 
       {result && (
@@ -190,6 +193,22 @@ export function PhotoScanPage() {
       )}
     </div>
   )
+}
+
+// supabase-js only exposes a generic "non-2xx status code" message on
+// FunctionsHttpError; the actual reason is in the response body we return
+// from the Edge Function (e.g. "Vision analysis failed: ..."). Read it back.
+async function describeFunctionError(error: unknown): Promise<string> {
+  const context = (error as { context?: Response }).context
+  if (context instanceof Response) {
+    try {
+      const body = await context.clone().json()
+      if (typeof body?.error === 'string') return body.error
+    } catch {
+      // fall through to the generic message below
+    }
+  }
+  return error instanceof Error ? error.message : String(error)
 }
 
 function LabeledNumberInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
