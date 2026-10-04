@@ -7,9 +7,9 @@ and track calories/macros/weight/exercise against personal goals.
 - **Frontend**: React + TypeScript + Vite + Tailwind CSS v4, React Router, TanStack Query
 - **Backend**: Supabase (Postgres + Auth + Storage + Edge Functions), all tables behind Row Level Security
 - **Nutrition data**: USDA FoodData Central (Foundation + SR Legacy datasets)
-- **Photo analysis**: a swappable open-weight vision model (default: Qwen2.5-VL via OpenRouter's
-  free tier) called server-side from a Supabase Edge Function — change providers any time by
-  editing env vars, not code (see [supabase/functions/_shared/vision.ts](supabase/functions/_shared/vision.ts))
+- **Photo analysis**: a swappable vision model (default: Google Gemini's free tier) called
+  server-side from a Supabase Edge Function — change providers any time by editing env vars,
+  not code (see [supabase/functions/_shared/vision.ts](supabase/functions/_shared/vision.ts))
 
 ## 1. One-time setup
 
@@ -28,9 +28,12 @@ and track calories/macros/weight/exercise against personal goals.
   the key arrives by email instantly. This is the **US** government food database API. It is not
   the same as `data.gov.in` (India's open data portal) — that site has no equivalent
   food-nutrition API, so a `data.gov.in` key will not work with `scripts/ingest-usda.ts`.
-- **Vision model (photo feature)**: sign up free at [openrouter.ai](https://openrouter.ai) →
-  Keys → Create Key. OpenRouter proxies many open-weight vision models; several are entirely
-  free (no card required) — the app defaults to `qwen/qwen2.5-vl-72b-instruct:free`.
+- **Vision model (photo feature)**: sign up free at
+  [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → Create API key — no card
+  required. The app defaults to Gemini's `gemini-2.5-flash` via its OpenAI-compatible endpoint,
+  which has a generous daily free quota. (Tried OpenRouter's free open-weight models first, but
+  if that route didn't work for you, Gemini is the more reliable free fallback — swap back any
+  time by changing `VISION_API_BASE_URL`/`VISION_MODEL`/`VISION_API_KEY`.)
 
 ### Configure environment variables
 
@@ -57,7 +60,9 @@ This creates all tables (`profiles`, `foods`, `food_logs`, `photo_scans`, `body_
 The vision API key must live as a **Supabase secret**, never in frontend code:
 
 ```bash
-npx supabase secrets set VISION_API_KEY=sk-or-v1-...
+npx supabase secrets set VISION_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+npx supabase secrets set VISION_MODEL=gemini-2.5-flash
+npx supabase secrets set VISION_API_KEY=your-gemini-key
 npx supabase functions deploy analyze-food-photo
 ```
 
@@ -95,7 +100,29 @@ npm run dev
 Open http://localhost:5173, sign up, and start logging. New accounts get a default `profiles`
 row automatically; fill in body stats on the Profile page to get suggested calorie/macro goals.
 
-## 3. How the photo feature works
+## 3. Build the Android app
+
+The web app is wrapped as a native Android app via [Capacitor](https://capacitorjs.com) — same
+codebase, no separate app to maintain. Requires Android SDK + Java 17+ (Android Studio's bundled
+JDK works, or `brew install openjdk@21`).
+
+```bash
+npm run android:build   # builds dist/, syncs it into android/, runs ./gradlew assembleDebug
+```
+
+The debug APK lands at `android/app/build/outputs/apk/debug/app-debug.apk`. Install it on a
+running emulator or connected device with:
+
+```bash
+adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+`npm run android:open` opens the native project in Android Studio if you'd rather build/run
+from there (needed anyway for a signed release build / Play Store upload). The app talks to the
+same Supabase project as the web build — whatever `.env.local` had at the time of `npm run
+build` is what's baked into the APK, so rebuild+resync after changing environment values.
+
+## 4. How the photo feature works
 
 1. User uploads/takes a photo in the app → it's uploaded to the private `food-photos` storage
    bucket under `<user_id>/...` (RLS-scoped, so users can only read their own photos).
