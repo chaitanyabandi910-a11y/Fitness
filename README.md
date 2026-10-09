@@ -21,6 +21,12 @@ and track calories/macros/weight/exercise against personal goals.
    - `anon` `public` key
    - `service_role` key (keep this secret — never put it in frontend code)
 3. Go to **Project Settings → General** and copy the **Reference ID** (also visible in the project URL).
+4. Go to **Authentication → Sign In / Providers → Email** and turn **off** "Confirm email", or
+   signups will silently fail to deliver — new cloud projects have no SMTP configured, so
+   Supabase's default mailer caps you at **2 emails/hour**. Turning off confirmation makes signup
+   instant with no email step. Before taking the app to real users, configure a real SMTP provider
+   (e.g. [Resend](https://resend.com), free tier) under **Authentication → Emails → SMTP Settings**
+   and turn confirmation back on.
 
 ### Get API keys
 
