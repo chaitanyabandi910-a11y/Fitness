@@ -218,7 +218,7 @@ function LabeledNumberInput({ label, value, onChange }: { label: string; value: 
         type="number"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full rounded border border-slate-200 px-1 py-1 text-center dark:border-slate-700 dark:bg-slate-800"
+        className="w-full rounded border border-slate-200 px-1 py-1 text-center [appearance:textfield] dark:border-slate-700 dark:bg-slate-800 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
       <p className="mt-0.5 text-slate-400">{label}</p>
     </div>

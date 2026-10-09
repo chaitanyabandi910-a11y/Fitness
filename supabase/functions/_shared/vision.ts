@@ -85,6 +85,17 @@ export async function analyzeFoodPhoto(base64Image: string, mediaType: string): 
     throw new Error('VISION_API_KEY is not set (see supabase secrets set VISION_API_KEY=...)')
   }
 
+  // The model occasionally emits malformed JSON despite response_format -- retry once
+  // before surfacing an error (ponytail: single retry, add backoff/more attempts if this
+  // still flakes in practice).
+  try {
+    return await requestAnalysis(base64Image, mediaType)
+  } catch {
+    return await requestAnalysis(base64Image, mediaType)
+  }
+}
+
+async function requestAnalysis(base64Image: string, mediaType: string): Promise<AnalysisResult> {
   const res = await fetch(`${VISION_API_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -94,7 +105,7 @@ export async function analyzeFoodPhoto(base64Image: string, mediaType: string): 
     body: JSON.stringify({
       model: VISION_MODEL,
       response_format: { type: 'json_object' },
-      max_tokens: 1024,
+      max_tokens: 4096,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         {
