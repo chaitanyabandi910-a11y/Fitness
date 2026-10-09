@@ -36,7 +36,7 @@ and track calories/macros/weight/exercise against personal goals.
   food-nutrition API, so a `data.gov.in` key will not work with `scripts/ingest-usda.ts`.
 - **Vision model (photo feature)**: sign up free at
   [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → Create API key — no card
-  required. The app defaults to Gemini's `gemini-2.5-flash-lite` via its OpenAI-compatible endpoint,
+  required. The app defaults to Gemini's `gemini-3.5-flash-lite` via its OpenAI-compatible endpoint,
   which has a generous daily free quota. (Tried OpenRouter's free open-weight models first, but
   if that route didn't work for you, Gemini is the more reliable free fallback — swap back any
   time by changing `VISION_API_BASE_URL`/`VISION_MODEL`/`VISION_API_KEY`.)
@@ -67,7 +67,7 @@ The vision API key must live as a **Supabase secret**, never in frontend code:
 
 ```bash
 npx supabase secrets set VISION_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-npx supabase secrets set VISION_MODEL=gemini-2.5-flash-lite
+npx supabase secrets set VISION_MODEL=gemini-3.5-flash-lite
 npx supabase secrets set VISION_API_KEY=your-gemini-key
 npx supabase functions deploy analyze-food-photo
 ```
