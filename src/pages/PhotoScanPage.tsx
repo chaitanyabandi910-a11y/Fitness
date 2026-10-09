@@ -39,11 +39,12 @@ export function PhotoScanPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     if (!f) return
-    setFile(f)
-    setPreviewUrl(URL.createObjectURL(f))
+    const resized = await resizeImage(f)
+    setFile(resized)
+    setPreviewUrl(URL.createObjectURL(resized))
     setResult(null)
     setError(null)
   }
@@ -193,6 +194,27 @@ export function PhotoScanPage() {
       )}
     </div>
   )
+}
+
+// Phone photos can be 3000px+ and several MB; the vision model only needs
+// enough resolution to make out dish boundaries, and bills/processes roughly
+// proportional to pixel count. Downscaling here cuts upload size and the
+// model's latency/cost for every scan (ponytail: fixed 1024px cap, make
+// configurable if a label ever needs more detail than that preserves).
+async function resizeImage(file: File, maxDim = 1024): Promise<File> {
+  const bitmap = await createImageBitmap(file)
+  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height))
+  if (scale === 1) return file
+
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(bitmap.width * scale)
+  canvas.height = Math.round(bitmap.height * scale)
+  canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+
+  const blob: Blob = await new Promise((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Image resize failed'))), 'image/jpeg', 0.85)
+  )
+  return new File([blob], file.name, { type: 'image/jpeg' })
 }
 
 // supabase-js only exposes a generic "non-2xx status code" message on
