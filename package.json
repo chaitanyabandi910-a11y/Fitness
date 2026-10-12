@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "ingest:usda": "node --env-file=.env.local --import tsx scripts/ingest-usda.ts",
+    "seed:indian": "node --env-file=.env.local --import tsx scripts/seed-indian-foods.ts",
     "android:sync": "npm run build && npx cap sync android",
     "android:build": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "android:open": "npx cap open android"

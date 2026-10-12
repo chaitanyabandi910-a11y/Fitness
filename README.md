@@ -96,6 +96,19 @@ This pulls the USDA Foundation + SR Legacy datasets (~9,000 whole foods — vege
 meats, grains, dairy, etc.) via the official API and upserts them into the `foods` table. Safe
 to re-run; it upserts on `usda_fdc_id`. Takes a few minutes.
 
+### Seed Indian dishes (optional)
+
+```bash
+npm run seed:indian
+```
+
+USDA has essentially no Indian/regional prepared dishes. `scripts/seed-indian-foods.ts` adds
+~39 common ones (dal, roti, paneer curries, biryani, etc.) with typical per-100g macros — a
+starting point, not lab-measured values. Safe to re-run (dedupes by name). Beyond this seed,
+the app also grows its own food library automatically: anything logged manually or identified
+via photo scan is saved to `foods` too (see `src/lib/foodLibrary.ts`), so it's searchable from
+then on without needing a dataset for every cuisine.
+
 ## 2. Run the app
 
 ```bash
