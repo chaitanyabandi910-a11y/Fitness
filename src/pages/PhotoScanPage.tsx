@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { upsertPersonalFood } from '../lib/foodLibrary'
 import type { MealType } from '../types/database'
 
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack']
@@ -84,8 +85,31 @@ export function PhotoScanPage() {
     setSaving(true)
     setError(null)
     const source: 'photo_label' | 'photo_vision' = result.scan_type === 'label_ocr' ? 'photo_label' : 'photo_vision'
-    const rows = result.items.map((item) => ({
+    // Only food_vision items get named by the model well enough to be worth
+    // reusing (label scans are often just "Product" -- not worth polluting
+    // search with).
+    const foodIds = await Promise.all(
+      result.items.map((item) =>
+        source === 'photo_vision'
+          ? upsertPersonalFood({
+              userId: user.id,
+              name: item.name,
+              source: 'ai_vision',
+              grams: item.estimated_grams,
+              calories_kcal: item.calories_kcal,
+              protein_g: item.protein_g,
+              carbs_g: item.carbs_g,
+              fat_g: item.fat_g,
+              fiber_g: item.fiber_g,
+              sugar_g: item.sugar_g,
+              sodium_mg: item.sodium_mg,
+            })
+          : Promise.resolve(null)
+      )
+    )
+    const rows = result.items.map((item, i) => ({
       user_id: user.id,
+      food_id: foodIds[i],
       custom_name: item.name,
       meal_type: mealType,
       quantity_g: item.estimated_grams,

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { scaleNutrition } from '../lib/nutrition'
+import { upsertPersonalFood } from '../lib/foodLibrary'
 import type { Food, MealType } from '../types/database'
 
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack']
@@ -90,8 +91,19 @@ export function LogFoodPage() {
     if (!manualName.trim()) return
     setSaving(true)
     setError(null)
+    const foodId = await upsertPersonalFood({
+      userId: user!.id,
+      name: manualName,
+      source: 'user',
+      grams,
+      calories_kcal: manualCalories,
+      protein_g: manualProtein,
+      carbs_g: manualCarbs,
+      fat_g: manualFat,
+    })
     const { error } = await supabase.from('food_logs').insert({
       user_id: user!.id,
+      food_id: foodId,
       custom_name: manualName.trim(),
       meal_type: mealType,
       quantity_g: grams,
