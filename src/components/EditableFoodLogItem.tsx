@@ -46,7 +46,7 @@ export function EditableFoodLogItem({ log }: Props) {
   if (!editing) {
     return (
       <li>
-        <button onClick={() => setEditing(true)} className="flex w-full items-center justify-between px-5 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800">
+        <button onClick={() => setEditing(true)} className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-slate-50 active:scale-[0.99] dark:hover:bg-slate-800">
           <div>
             <p className="font-medium text-slate-700 dark:text-slate-200">{name}</p>
             <p className="text-xs uppercase tracking-wide text-slate-400">{log.meal_type} · {log.quantity_g}g</p>
@@ -58,7 +58,7 @@ export function EditableFoodLogItem({ log }: Props) {
   }
 
   return (
-    <li className="space-y-3 bg-slate-50 px-5 py-4 dark:bg-slate-800/50">
+    <li className="animate-fade-in space-y-3 bg-slate-50 px-5 py-4 dark:bg-slate-800/50">
       <p className="font-medium text-slate-700 dark:text-slate-200">{name}</p>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -93,7 +93,7 @@ export function EditableFoodLogItem({ log }: Props) {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>

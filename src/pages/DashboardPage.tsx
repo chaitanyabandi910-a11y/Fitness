@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { MacroProgress } from '../components/MacroProgress'
 import { EditableFoodLogItem } from '../components/EditableFoodLogItem'
+import { MacroDonut } from '../components/MacroDonut'
+import { WeeklyTrendChart } from '../components/WeeklyTrendChart'
 
 function startOfTodayISO() {
   const d = new Date()
@@ -105,12 +107,29 @@ export function DashboardPage() {
       )}
 
       <div className="flex gap-3">
-        <Link to="/log" className="flex-1 rounded-lg bg-emerald-600 py-2.5 text-center font-medium text-white hover:bg-emerald-700">
+        <Link
+          to="/log"
+          className="flex-1 rounded-lg bg-emerald-600 py-2.5 text-center font-medium text-white transition-all hover:bg-emerald-700 active:scale-95"
+        >
           + Log Food
         </Link>
-        <Link to="/scan" className="flex-1 rounded-lg border border-emerald-600 py-2.5 text-center font-medium text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950">
+        <Link
+          to="/scan"
+          className="flex-1 rounded-lg border border-emerald-600 py-2.5 text-center font-medium text-emerald-600 transition-all hover:bg-emerald-50 active:scale-95 dark:hover:bg-emerald-950"
+        >
           📷 Scan Photo
         </Link>
+      </div>
+
+      <div className="grid gap-4 rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900 sm:grid-cols-2">
+        <div>
+          <h2 className="mb-3 font-medium text-slate-700 dark:text-slate-200">Today's macro split</h2>
+          <MacroDonut protein={totals.protein} carbs={totals.carbs} fat={totals.fat} />
+        </div>
+        <div>
+          <h2 className="mb-3 font-medium text-slate-700 dark:text-slate-200">Last 7 days</h2>
+          <WeeklyTrendChart />
+        </div>
       </div>
 
       <div className="rounded-xl bg-white shadow-sm dark:bg-slate-900">

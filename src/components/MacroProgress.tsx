@@ -20,7 +20,7 @@ export function MacroProgress({ label, consumed, goal, unit, colorClassName }: M
       </div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
         <div
-          className={`h-full rounded-full transition-all ${colorClassName}`}
+          className={`h-full rounded-full transition-all duration-700 ease-out ${colorClassName}`}
           style={{ width: `${pct}%` }}
         />
       </div>
