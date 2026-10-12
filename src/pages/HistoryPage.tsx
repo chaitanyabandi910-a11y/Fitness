@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { EditableFoodLogItem } from '../components/EditableFoodLogItem'
 
 function daysAgoISO(days: number) {
   const d = new Date()
@@ -53,13 +54,7 @@ export function HistoryPage() {
             </div>
             <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {dayLogs!.map((log) => (
-                <li key={log.id} className="flex items-center justify-between px-5 py-2.5">
-                  <div>
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{log.foods?.name ?? log.custom_name}</p>
-                    <p className="text-xs uppercase tracking-wide text-slate-400">{log.meal_type} · {log.quantity_g}g</p>
-                  </div>
-                  <span className="text-sm text-slate-500">{Math.round(log.calories_kcal)} kcal</span>
-                </li>
+                <EditableFoodLogItem key={log.id} log={log} />
               ))}
             </ul>
           </div>

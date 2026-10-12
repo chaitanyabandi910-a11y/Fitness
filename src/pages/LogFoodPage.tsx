@@ -47,8 +47,26 @@ export function LogFoodPage() {
     return () => clearTimeout(timeout)
   }, [query])
 
-  const preview = selectedFood
-    ? scaleNutrition(
+  const [preview, setPreview] = useState<ReturnType<typeof scaleNutrition<{
+    calories_kcal: number
+    protein_g: number
+    carbs_g: number
+    fat_g: number
+    fiber_g: number | null
+    sugar_g: number | null
+    sodium_mg: number | null
+  }>> | null>(null)
+
+  // Re-derive the preview from the food's per-100g values whenever the
+  // selected food or quantity changes; individual fields stay directly
+  // editable in between (same pattern as the photo-scan review step).
+  useEffect(() => {
+    if (!selectedFood) {
+      setPreview(null)
+      return
+    }
+    setPreview(
+      scaleNutrition(
         {
           calories_kcal: selectedFood.calories_kcal,
           protein_g: selectedFood.protein_g,
@@ -60,7 +78,8 @@ export function LogFoodPage() {
         },
         grams
       )
-    : null
+    )
+  }, [selectedFood, grams])
 
   async function handleSubmitFood(e: FormEvent) {
     e.preventDefault()
@@ -196,12 +215,13 @@ export function LogFoodPage() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-4 gap-2 rounded-lg bg-slate-50 p-3 text-center text-sm dark:bg-slate-800">
-            <div><p className="font-semibold">{preview.calories_kcal}</p><p className="text-slate-400">kcal</p></div>
-            <div><p className="font-semibold">{preview.protein_g}g</p><p className="text-slate-400">protein</p></div>
-            <div><p className="font-semibold">{preview.carbs_g}g</p><p className="text-slate-400">carbs</p></div>
-            <div><p className="font-semibold">{preview.fat_g}g</p><p className="text-slate-400">fat</p></div>
+          <div className="grid grid-cols-4 gap-2">
+            <EditableMacroField label="kcal" value={preview.calories_kcal} onChange={(v) => setPreview({ ...preview, calories_kcal: v })} />
+            <EditableMacroField label="protein g" value={preview.protein_g} onChange={(v) => setPreview({ ...preview, protein_g: v })} />
+            <EditableMacroField label="carbs g" value={preview.carbs_g} onChange={(v) => setPreview({ ...preview, carbs_g: v })} />
+            <EditableMacroField label="fat g" value={preview.fat_g} onChange={(v) => setPreview({ ...preview, fat_g: v })} />
           </div>
+          <p className="text-center text-xs text-slate-400">Auto-calculated from quantity — edit any value if it looks off.</p>
           <button type="submit" disabled={saving} className="w-full rounded-lg bg-emerald-600 py-2.5 font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
             {saving ? 'Saving...' : 'Add to log'}
           </button>
@@ -256,6 +276,20 @@ export function LogFoodPage() {
           </button>
         </form>
       )}
+    </div>
+  )
+}
+
+function EditableMacroField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <div>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full rounded border border-slate-200 px-1 py-1 text-center [appearance:textfield] dark:border-slate-700 dark:bg-slate-800 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+      <p className="mt-0.5 text-center text-xs text-slate-400">{label}</p>
     </div>
   )
 }

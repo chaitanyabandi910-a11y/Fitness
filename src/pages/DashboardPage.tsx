@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { MacroProgress } from '../components/MacroProgress'
+import { EditableFoodLogItem } from '../components/EditableFoodLogItem'
 
 function startOfTodayISO() {
   const d = new Date()
@@ -122,13 +123,7 @@ export function DashboardPage() {
         )}
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {(logs ?? []).map((log) => (
-            <li key={log.id} className="flex items-center justify-between px-5 py-3">
-              <div>
-                <p className="font-medium text-slate-700 dark:text-slate-200">{log.foods?.name ?? log.custom_name ?? 'Food'}</p>
-                <p className="text-xs uppercase tracking-wide text-slate-400">{log.meal_type} · {log.quantity_g}g</p>
-              </div>
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{Math.round(log.calories_kcal)} kcal</span>
-            </li>
+            <EditableFoodLogItem key={log.id} log={log} />
           ))}
         </ul>
       </div>
