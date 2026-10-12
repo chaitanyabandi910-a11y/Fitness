@@ -86,7 +86,7 @@ export function DashboardPage() {
         </div>
       )}
 
-      <div className="space-y-4 rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900">
+      <div className="glass-card space-y-4 rounded-2xl p-5">
         <MacroProgress label="Calories" consumed={totals.calories} goal={profile?.daily_calorie_goal ?? null} unit=" kcal" colorClassName="bg-emerald-500" />
         <MacroProgress label="Protein" consumed={totals.protein} goal={profile?.daily_protein_goal_g ?? null} unit="g" colorClassName="bg-sky-500" />
         <MacroProgress label="Carbs" consumed={totals.carbs} goal={profile?.daily_carbs_goal_g ?? null} unit="g" colorClassName="bg-amber-500" />
@@ -94,7 +94,7 @@ export function DashboardPage() {
       </div>
 
       {caloriesBurned > 0 && (
-        <div className="rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900">
+        <div className="glass-card rounded-2xl p-5">
           <div className="flex justify-between text-sm">
             <span className="text-slate-500">Calories burned (exercise)</span>
             <span className="font-medium text-slate-700 dark:text-slate-200">-{Math.round(caloriesBurned)} kcal</span>
@@ -121,7 +121,7 @@ export function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid gap-4 rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900 sm:grid-cols-2">
+      <div className="glass-card grid gap-4 rounded-2xl p-5 sm:grid-cols-2">
         <div>
           <h2 className="mb-3 font-medium text-slate-700 dark:text-slate-200">Today's macro split</h2>
           <MacroDonut protein={totals.protein} carbs={totals.carbs} fat={totals.fat} />
@@ -132,8 +132,8 @@ export function DashboardPage() {
         </div>
       </div>
 
-      <div className="rounded-xl bg-white shadow-sm dark:bg-slate-900">
-        <h2 className="border-b border-slate-100 px-5 py-3 font-medium text-slate-700 dark:border-slate-800 dark:text-slate-200">
+      <div className="glass-card rounded-2xl">
+        <h2 className="border-b border-slate-200/50 px-5 py-3 font-medium text-slate-700 dark:border-white/10 dark:text-slate-200">
           Today's entries
         </h2>
         {isLoading && <p className="px-5 py-4 text-slate-500">Loading...</p>}

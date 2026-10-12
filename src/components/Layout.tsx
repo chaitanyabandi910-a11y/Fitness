@@ -14,7 +14,7 @@ export function Layout() {
   const location = useLocation()
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 dark:text-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-100 via-sky-50 to-violet-100 dark:from-slate-950 dark:via-emerald-950/30 dark:to-slate-950 dark:text-slate-100">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <span className="flex items-center gap-2 text-lg font-semibold">
